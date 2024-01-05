@@ -1,0 +1,3 @@
+<?php
+
+$files = scandir("./json/");
