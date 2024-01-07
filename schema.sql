@@ -23,6 +23,9 @@ CREATE TABLE progress_link (
   link_index INTEGER,
   parent_state INTEGER,
   child_state INTEGER,
+  p_host TEXT,
+  p_session_period TEXT,
+  p_date TEXT,
   FOREIGN KEY (bill_id) REFERENCES bill(id),
   FOREIGN KEY (parent_state) REFERENCES bill_state(id),
   FOREIGN KEY (child_state) REFERENCES bill_state(id)
