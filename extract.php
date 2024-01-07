@@ -14,6 +14,7 @@ foreach ($files as $file) {
         $bill_id = insert_bill_date($pdo, $bill_data);
         foreach ($progress_array as $progress) {
             list($host, $state, $sessionPeriod, $date) = get_progress_data($progress);
+            $bill_state_id = get_bill_state_id($pdo, $state, $host);
         }
     }
 }
@@ -53,4 +54,13 @@ function get_progress_data($progress) {
         $date = $progress["日期"][0];
     }
     return array($host, $state, $sessionPeriod, $date);
+}
+
+function get_bill_state_id($pdo, $state, $host) {
+    $sql = "SELECT id FROM bill_state WHERE name = ? AND host = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(array($state, $host));
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($result) { return $result["id"]; }
+    return null;
 }
