@@ -59,6 +59,7 @@ function insert_bill_date($pdo, $bill_data) {
 function get_progress_data($progress) {
     $host = (array_key_exists("院會/委員會", $progress)) ? $progress["院會/委員會"] : "none";
     $state = (array_key_exists("狀態", $progress)) ? $progress["狀態"] : "none";
+    $state = digestState($state);
     $sessionPeriod = (array_key_exists("會期", $progress)) ? $progress["會期"] : "none";
     $date = "none";
     if (array_key_exists("日期", $progress) and count($progress["日期"]) > 0) {
@@ -90,4 +91,11 @@ function insert_progress_link($pdo, $progress_data) {
     $stmt = $pdo->prepare($sql);
     $stmt->execute($progress_data);
     return $pdo->lastInsertId();
+}
+
+function digestState($state) {
+    $index = strpos($state, "(");
+    if ($index === false) { $index = strpos($state, "（"); }
+    if ($index !== false) { $state = substr($state, 0, $index); }
+    return $state;
 }
