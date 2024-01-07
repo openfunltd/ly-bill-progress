@@ -4,6 +4,7 @@ $files = scandir("./json/");
 $files = array_slice($files, 2);
 
 $pdo = new PDO('sqlite:bill.db');
+$end_state_id = 2;
 
 foreach ($files as $file) {
     $bills = get_bills($file);
@@ -12,10 +13,19 @@ foreach ($files as $file) {
         $progress_array = $bill["議案流程"];
         $bill_data = get_bill_data($bill);
         $bill_id = insert_bill_date($pdo, $bill_data);
-        foreach ($progress_array as $progress) {
+        $parent_id = 1;
+        foreach ($progress_array as $idx => $progress) {
             list($host, $state, $sessionPeriod, $date) = get_progress_data($progress);
             $bill_state_id = get_bill_state_id($pdo, $state, $host);
             if (is_null($bill_state_id)) { $bill_state_id = insert_bill_state($pdo, $state, $host); }
+            $progress_data = [$bill_id, $idx, $parent_id, $bill_state_id, $host, $sessionPeriod, $date];
+            insert_progress_link($pdo, $progress_data);
+            $parent_id = $bill_state_id;
+            $isLastElement = ($idx === array_key_last($progress_array));
+            if ($isLastElement) {
+                $progress_data = [$bill_id, $idx + 1, $parent_id, $end_state_id, "none", "none", "none"];
+                insert_progress_link($pdo, $progress_data);
+            }
         }
     }
 }
@@ -70,5 +80,14 @@ function insert_bill_state($pdo, $state, $host) {
     $sql = "INSERT INTO bill_state (state_name, host) VALUES (?, ?)";
     $stmt = $pdo->prepare($sql);
     $stmt->execute(array($state, $host));
+    return $pdo->lastInsertId();
+}
+
+function insert_progress_link($pdo, $progress_data) {
+    $sql = "INSERT INTO progress_link " .
+           "(bill_id, link_index, parent_state, child_state, p_host, p_session_period, p_date) " .
+           "VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($progress_data);
     return $pdo->lastInsertId();
 }
