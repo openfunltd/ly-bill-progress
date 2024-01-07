@@ -57,7 +57,7 @@ function get_progress_data($progress) {
 }
 
 function get_bill_state_id($pdo, $state, $host) {
-    $sql = "SELECT id FROM bill_state WHERE name = ? AND host = ?";
+    $sql = "SELECT id FROM bill_state WHERE state_name = ? AND host = ?";
     $stmt = $pdo->prepare($sql);
     $stmt->execute(array($state, $host));
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
